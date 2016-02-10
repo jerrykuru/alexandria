@@ -75,7 +75,6 @@ public class BookService extends IntentService {
         if(ean.length()!=13){
             return;
         }
-
         Cursor bookEntry = getContentResolver().query(
                 AlexandriaContract.BookEntry.buildBookUri(Long.parseLong(ean)),
                 null, // leaving "columns" null just returns all the columns.

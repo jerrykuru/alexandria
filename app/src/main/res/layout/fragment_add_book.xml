@@ -4,6 +4,7 @@
 
     <RelativeLayout
         android:orientation="horizontal"
+        android:id="@+id/maincontainer"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_gravity="center_horizontal|top">

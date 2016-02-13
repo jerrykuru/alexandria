@@ -1,7 +1,9 @@
 package it.jaschke.alexandria;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -150,9 +152,20 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     }
 
     private void restartLoader(){
+
         getLoaderManager().restartLoader(LOADER_ID, null, this);
     }
 
+//    @Override
+//    public void onResume(){
+//        Log.d(TAG, "on resume");
+//        super.onResume();
+//        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+//        String defaultValue = getResources().getString(R.string.barcode_key);
+//        String barCode = sharedPref.getString(getString(R.string.barcode_key), defaultValue);
+//        Log.d(TAG, barCode);
+//        listBookDetailsByISBN(barCode);
+//    }
     @Override
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
         if(ean.getText().length()==0){
@@ -174,11 +187,13 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
 
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
+
         if (!data.moveToFirst()) {
             return;
         }
 
         String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+        Log.d(TAG, bookTitle);
         ((TextView) rootView.findViewById(R.id.bookTitle)).setText(bookTitle);
 
         String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
@@ -251,6 +266,12 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                 if (data != null) {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
+                    SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString(getString(R.string.barcode_key),barcode.displayValue);
+                    editor.commit();
+                    listBookDetailsByISBN(barcode.displayValue);
+                    super.onActivityResult(requestCode, resultCode, data);
                 } else {
                     Log.d(TAG, "No barcode captured, intent data is null");
                 }
@@ -258,9 +279,31 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                 Log.d(TAG, "No barcode captured, intent data is statusMessage");
                 Log.d(TAG, CommonStatusCodes.getStatusCodeString(resultCode));
             }
-        }
-        else {
+        } else {
             super.onActivityResult(requestCode, resultCode, data);
+
+        }
+    }
+
+    private void listBookDetailsByISBN( String ean){
+        if (Utility.hasNetWorkConnectivity(getActivity())) {
+            //Once we have an ISBN, start a book intent
+            Intent bookIntent = new Intent(getActivity(), BookService.class);
+            bookIntent.putExtra(BookService.EAN, ean);
+            bookIntent.setAction(BookService.FETCH_BOOK);
+            getActivity().startService(bookIntent);
+            AddBook.this.restartLoader();
+            CharSequence text = "The ISBN Number was added to collection ISBN=" + ean ;
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(getActivity(), text, duration);
+            toast.show();
+
+        }else{
+            CharSequence text = "No Network Connection, this function will not work without network connectivity";
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(getActivity(), text, duration);
+            toast.show();
+
         }
     }
 }

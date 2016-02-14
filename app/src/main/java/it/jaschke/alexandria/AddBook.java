@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -45,6 +46,11 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
 
 
     public AddBook(){
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -292,7 +298,6 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
             bookIntent.putExtra(BookService.EAN, ean);
             bookIntent.setAction(BookService.FETCH_BOOK);
             getActivity().startService(bookIntent);
-            AddBook.this.restartLoader();
             CharSequence text = "The ISBN Number was added to collection ISBN=" + ean ;
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(getActivity(), text, duration);

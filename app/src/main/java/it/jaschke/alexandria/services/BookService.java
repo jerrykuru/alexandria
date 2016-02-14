@@ -216,6 +216,7 @@ public class BookService extends IntentService {
             values.put(AlexandriaContract.AuthorEntry._ID, ean);
             values.put(AlexandriaContract.AuthorEntry.AUTHOR, jsonArray.getString(i));
             getContentResolver().insert(AlexandriaContract.AuthorEntry.CONTENT_URI, values);
+            Log.v(LOG_TAG, ean);
             values= new ContentValues();
         }
     }

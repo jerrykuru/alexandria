@@ -8,6 +8,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,7 +25,7 @@ import it.jaschke.alexandria.services.DownloadImage;
 
 
 public class BookDetail extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-
+    public static final String LOG_TAG = "BookDetail";
     public static final String EAN_KEY = "EAN";
     private final int LOADER_ID = 10;
     private View rootView;
@@ -93,13 +94,18 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
         }
 
         bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-        ((TextView) rootView.findViewById(R.id.fullBookTitle)).setText(bookTitle);
-
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text) + bookTitle);
-        shareActionProvider.setShareIntent(shareIntent);
+        if(bookTitle != null) {
+            ((TextView) rootView.findViewById(R.id.fullBookTitle)).setText(bookTitle);
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text) + bookTitle);
+            if(shareActionProvider != null) {
+                shareActionProvider.setShareIntent(shareIntent);
+            }else{
+                Log.v(LOG_TAG,"shareActionProvider is null");
+            }
+        }
 
         String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
         ((TextView) rootView.findViewById(R.id.fullBookSubTitle)).setText(bookSubTitle);
@@ -124,9 +130,6 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
         if(categories != null) {
             ((TextView) rootView.findViewById(R.id.categories)).setText(categories);
 
-            if (rootView.findViewById(R.id.right_container) != null) {
-                rootView.findViewById(R.id.backButton).setVisibility(View.INVISIBLE);
-            }
         }
 
     }
